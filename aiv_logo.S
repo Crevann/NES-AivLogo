@@ -147,10 +147,21 @@ nmi:
     LDA buttons
     AND #%00000010
     BEQ skip_scroll_backwards
+      ;Check if x is overflowing
+      LDA x_cam_pos
+      CMP #$00
+      BNE not_underflowing
+        LDA current_nametable
+        CMP #$04 ;If nametable1, go to nametable0, else stop
+        BNE not_nametable1
+          LDA #$00
+          STA current_nametable
+          JMP not_underflowing
+        not_nametable1:
+        JMP skip_scroll_backwards
+      not_underflowing:
       DEC x_cam_pos
     skip_scroll_backwards:
-    LDA buttons
-    skip_switch_table:
 
   ;Scroll background
   LDA #%10001000
