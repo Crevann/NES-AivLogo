@@ -26,8 +26,8 @@
 .define logo_height #$08
 
 ; Scroll variables
-.define x_cam_pos $01
-.define y_cam_pos $02
+.define x_cam_pos $00
+.define y_cam_pos $01
 .define current_nametable $07
 
 start:
@@ -122,11 +122,28 @@ nmi:
   PHA
   JSR readjoy
   PLA
+  
+    ;Check right
     LDA buttons
     AND #%00000001
     BEQ skip_scroll_forward
+      ;Check if x is overflowing
+      LDA x_cam_pos
+      CMP #$FF
+      BNE not_overflowing
+        LDA current_nametable
+        CMP #$00 ;If nametable0, go to nametable1, else stop
+        BNE not_nametable0
+          LDA #$04
+          STA current_nametable
+          JMP not_overflowing
+        not_nametable0:
+        JMP skip_scroll_forward
+      not_overflowing:
       INC x_cam_pos
     skip_scroll_forward:
+    
+    ;Check left
     LDA buttons
     AND #%00000010
     BEQ skip_scroll_backwards
