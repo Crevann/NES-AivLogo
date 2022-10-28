@@ -78,17 +78,17 @@ start:
   LDA #$21
   STA PPUADDR
   STA addr_high_byte
-  LDA #$4A
+  LDA #$08
   STA PPUADDR
   STA addr_low_byte
 
   JSR load_background
 
   ;load nametable1 address
-  LDA #$24
+  LDA #$25
   STA PPUADDR
   STA addr_high_byte
-  LDA #$00
+  LDA #$08
   STA PPUADDR
   STA addr_low_byte
 
