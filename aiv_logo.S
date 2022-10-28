@@ -75,10 +75,10 @@ start:
   ;load background
 
   ;load nametable0 address
-  LDA #$20
+  LDA #$21
   STA PPUADDR
   STA addr_high_byte
-  LDA #$00
+  LDA #$4A
   STA PPUADDR
   STA addr_low_byte
 
@@ -213,11 +213,11 @@ load_background:
       LDX #$00
       INY
       LDA addr_low_byte
-      ADC #$0F
-      CMP #$FF
-      BNE no_overflow
-        INC addr_high_byte
-      no_overflow:
+      ASL A ;Check if last bit
+      BCS last_bit
+      LDA addr_low_byte
+      ADC #$10
+      set_address:
       STA addr_low_byte 
       LDA addr_high_byte
       STA PPUADDR
@@ -226,6 +226,14 @@ load_background:
       CPY logo_height
       BNE background_loop
   RTS
+
+  last_bit:
+    LDA addr_low_byte
+    ADC #$0F
+    BCC no_overflow
+        INC addr_high_byte
+    no_overflow:
+    JMP set_address
 
 .goto $FFFA
 
