@@ -194,7 +194,11 @@ nmi:
     LDA sprite_attr
     AND #%00111111
     STA sprite_attr
-    INC x_pos
+    LDA x_pos
+    CMP #$F8
+    BEQ max_x
+      INC x_pos
+    max_x:
   skip_right:
   ;Go left
   LDA buttons
@@ -205,7 +209,11 @@ nmi:
     LDA sprite_attr
     ORA #%01000000
     STA sprite_attr
-    DEC x_pos
+    LDA x_pos
+    CMP #$00
+    BEQ min_x
+      DEC x_pos
+    min_x:
   skip_left:
   ;Go down
   LDA buttons
@@ -213,7 +221,11 @@ nmi:
   BEQ skip_down
     LDA look_down
     STA sprite_tile
-    INC y_pos
+    LDA y_pos
+    CMP #$DF
+    BEQ max_y
+      INC y_pos
+    max_y:
   skip_down:
   ;Go up
   LDA buttons
@@ -221,7 +233,11 @@ nmi:
   BEQ skip_up
     LDA look_up
     STA sprite_tile
-    DEC y_pos
+    LDA y_pos
+    CMP #$07
+    BEQ min_y
+      DEC y_pos
+    min_y:
   skip_up:
   LDA sprite_page
   STA OAMDMA 
