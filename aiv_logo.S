@@ -25,6 +25,18 @@
 .define logo_width #$10
 .define logo_height #$08
 
+; Creatura variables
+.define sprite_page #$02
+.define x_pos $0203
+.define y_pos $0200
+.define sprite_tile $0201
+.define sprite_attr $0202
+
+; Creatura sprite index
+.define look_horizontal #$00
+.define look_down #$01
+.define look_up #$02
+
 ; Scroll variables
 .define x_cam_pos $00
 .define y_cam_pos $01
@@ -40,7 +52,7 @@ start:
   STA current_nametable
 
   ;enable background and sprites
-  LDA #%00001110
+  LDA #%00011110
   STA PPUMASK
 
   ;set to $3F00 for background palette0
@@ -95,6 +107,14 @@ start:
   JSR load_background
 
   ;load first sprite
+  LDA #$32
+  STA x_pos
+  STA y_pos
+  LDA #$00
+  STA sprite_tile
+  STA sprite_attr
+  LDA #$02
+  STA OAMDMA
   loop:
     JMP loop
 
@@ -122,46 +142,75 @@ nmi:
   PHA
   JSR readjoy
   PLA
-  
-    ;Check right
-    LDA buttons
-    AND #%00000001
-    BEQ skip_scroll_forward
-      ;Check if x is overflowing
-      LDA x_cam_pos
-      CMP #$FF
-      BNE not_overflowing
-        LDA current_nametable
-        CMP #$00 ;If nametable0, go to nametable1, else stop
-        BNE not_nametable0
-          LDA #$04
-          STA current_nametable
-          JMP not_overflowing
-        not_nametable0:
-        JMP skip_scroll_forward
-      not_overflowing:
-      INC x_cam_pos
-    skip_scroll_forward:
     
-    ;Check left
-    LDA buttons
-    AND #%00000010
-    BEQ skip_scroll_backwards
-      ;Check if x is overflowing
-      LDA x_cam_pos
-      CMP #$00
-      BNE not_underflowing
-        LDA current_nametable
-        CMP #$04 ;If nametable1, go to nametable0, else stop
-        BNE not_nametable1
-          LDA #$00
-          STA current_nametable
-          JMP not_underflowing
-        not_nametable1:
-        JMP skip_scroll_backwards
-      not_underflowing:
-      DEC x_cam_pos
-    skip_scroll_backwards:
+  ;Control background scrolling on A and B
+  ;Check right with A
+  LDA buttons
+  AND #%10000000
+  BEQ skip_scroll_forward
+    ;Check if x is overflowing
+    LDA x_cam_pos
+    CMP #$FF
+    BNE not_overflowing
+      LDA current_nametable
+      CMP #$00 ;If nametable0, go to nametable1, else stop
+      BNE not_nametable0
+        LDA #$04
+        STA current_nametable
+        JMP not_overflowing
+      not_nametable0:
+      JMP skip_scroll_forward
+    not_overflowing:
+    INC x_cam_pos
+  skip_scroll_forward:
+  
+  ;Check left with B
+  LDA buttons
+  AND #%01000000
+  BEQ skip_scroll_backwards
+    ;Check if x is overflowing
+    LDA x_cam_pos
+    CMP #$00
+    BNE not_underflowing
+      LDA current_nametable
+      CMP #$04 ;If nametable1, go to nametable0, else stop
+      BNE not_nametable1
+        LDA #$00
+        STA current_nametable
+        JMP not_underflowing
+      not_nametable1:
+      JMP skip_scroll_backwards
+    not_underflowing:
+    DEC x_cam_pos
+  skip_scroll_backwards:
+
+  ;Control Creatura
+  ;Go right
+  LDA buttons
+  AND #%00000001
+  BEQ skip_right
+    INC x_pos
+  skip_right:
+  ;Go left
+  LDA buttons
+  AND #%00000010
+  BEQ skip_left
+    DEC x_pos
+  skip_left:
+  ;Go down
+  LDA buttons
+  AND #%00000100
+  BEQ skip_down
+    INC y_pos
+  skip_down:
+  ;Go up
+  LDA buttons
+  AND #%00001000
+  BEQ skip_up
+    DEC y_pos
+  skip_up:
+  LDA sprite_page
+  STA OAMDMA 
 
   ;Scroll background
   LDA #%10001000
