@@ -189,24 +189,38 @@ nmi:
   LDA buttons
   AND #%00000001
   BEQ skip_right
+    LDA look_horizontal
+    STA sprite_tile
+    LDA sprite_attr
+    AND #%00111111
+    STA sprite_attr
     INC x_pos
   skip_right:
   ;Go left
   LDA buttons
   AND #%00000010
   BEQ skip_left
+    LDA look_horizontal
+    STA sprite_tile
+    LDA sprite_attr
+    ORA #%01000000
+    STA sprite_attr
     DEC x_pos
   skip_left:
   ;Go down
   LDA buttons
   AND #%00000100
   BEQ skip_down
+    LDA look_down
+    STA sprite_tile
     INC y_pos
   skip_down:
   ;Go up
   LDA buttons
   AND #%00001000
   BEQ skip_up
+    LDA look_up
+    STA sprite_tile
     DEC y_pos
   skip_up:
   LDA sprite_page
